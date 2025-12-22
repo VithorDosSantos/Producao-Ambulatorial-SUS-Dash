@@ -131,3 +131,62 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Node.js / Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.next/
+frontend/.turbo/
+frontend/.eslintcache
+frontend/.parcel-cache/
+frontend/.cache/
+frontend/.env*
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+frontend/package-lock.json
+
+# Python virtual environments (caso criados em subpastas)
+backend/.env*
+backend/venv/
+backend/.venv/
+backend/env/
+backend/ENV/
+backend/venv.bak/
+backend/env.bak/
+
+# Arquivos de lock do backend (caso npm/yarn usados por engano)
+backend/package-lock.json
+backend/yarn.lock
+
+# Arquivos de backup e temporários gerais
+*.orig
+*.bak
+*.tmp
+*.swp
+*~
+
+# Arquivos de configuração locais
+*.local
+*.sublime-workspace
+*.sublime-project
+
+# Arquivos de banco de dados locais
+*.sqlite3
+*.db
+*.db-journal
+
+# Arquivos de upload/teste
+uploads/
+test-uploads/
+
+# Arquivos de output de testes
+backend/.pytest_cache/
+backend/.mypy_cache/
+backend/.coverage
+backend/.coverage.*
+backend/.cache
+
+# Arquivos de documentação gerados
+docs/_build/
