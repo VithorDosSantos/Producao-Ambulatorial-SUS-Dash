@@ -43,15 +43,26 @@ async def get_tendencia_mensal(
         from ..services.calculos_kpi import calcular_tendencia_mensal
 
         if app_state.tem_dados():
-            df_papa = app_state.df_papa
-            df_teto = app_state.df_teto
+            df_papa = app_state.df_papa.copy()
+            df_teto = app_state.df_teto.copy()
+            
             # Filtra por competências, categorias e unidades
             if competencias:
                 df_papa = app_state.filtrar_papa_por_competencias(competencias)
-            if categorias:
-                df_papa = df_papa[df_papa['Categoria'].isin(categorias)]
+            
+            # Filtro de unidades no PAPA
             if unidades:
                 df_papa = df_papa[df_papa['CNES_KEY'].isin(unidades)]
+            
+            # Filtro de categoria no TETO
+            if categorias:
+                # Remove emojis das categorias no df_teto para comparação
+                df_teto['Categoria_Limpa'] = df_teto['Categoria'].apply(
+                    lambda x: ''.join([c for i, c in enumerate(x) if c.isalpha() or c == ' ' or (i > 0 and not c.isalpha())]).strip()
+                )
+                df_teto = df_teto[df_teto['Categoria_Limpa'].isin(categorias)]
+                df_teto = df_teto.drop(columns=['Categoria_Limpa'])
+            
             df_consolidado = consolidar_producao_teto(df_papa, df_teto)
             tendencia = calcular_tendencia_mensal(df_papa, df_teto)
             return tendencia

@@ -116,23 +116,18 @@ def calcular_distribuicao_categoria(
     Returns:
         Lista de dicionários com dados por categoria
     """
-    # Primeiro, pega teto único por unidade
-    df_teto_unico = df_consolidado.groupby('CNES_KEY').agg({
-        'Valor_Teto': 'first'
-    }).reset_index()
-    
     # Agrupa por Categoria somando produção
     df_cat = df_consolidado.groupby('Categoria').agg(
         Producao=('Valor_Produzido', 'sum')
     ).reset_index()
     
-    # Total do teto (único para todas as categorias)
-    teto_total_base = df_teto_unico['Valor_Teto'].sum()
-    teto_total = teto_total_base * num_meses
+    # Total produzido (soma de todas as categorias)
+    total_produzido = df_cat['Producao'].sum()
     
     resultado = []
     for _, row in df_cat.iterrows():
-        perc_exec = (row['Producao'] / teto_total * 100) if teto_total > 0 else 0
+        # Percentual = (produção da categoria / produção total) * 100
+        perc_exec = (row['Producao'] / total_produzido * 100) if total_produzido > 0 else 0
         
         resultado.append({
             'categoria': row['Categoria'],

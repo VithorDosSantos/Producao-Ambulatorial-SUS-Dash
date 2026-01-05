@@ -49,13 +49,13 @@ async def upload_papa(files: List[UploadFile] = File(...)):
         # Concatena todos os arquivos
         df_papa_final = pd.concat(papa_dfs, ignore_index=True)
         
-        # Armazena no estado
-        app_state.set_dados_papa(df_papa_final, nomes_arquivos)
-        
-        # Carrega mapa de categorias se disponível
+        # Carrega mapa de categorias ANTES de armazenar
         mapa_cat = carregar_mapa_categorias()
         if mapa_cat:
             app_state.set_mapa_categorias(mapa_cat)
+        
+        # Armazena no estado
+        app_state.set_dados_papa(df_papa_final, nomes_arquivos)
         
         # Se já tem teto, consolida
         if app_state.df_teto is not None:

@@ -41,22 +41,14 @@ class DatabaseService:
     @staticmethod
     def get_categorias_disponiveis() -> List[str]:
         """
-        Retorna lista de categorias (tipos de procedimento) disponíveis
+        Retorna lista de categorias (tipos de unidade) disponíveis
         
         Returns:
-            Lista de strings com nomes das categorias
+            Lista de strings com nomes das categorias (UPA, HOSPITAL, SAMU, etc.)
         """
         query = """
-        SELECT DISTINCT 
-            CASE 
-                WHEN p.complexidade = '01' THEN 'ATENÇÃO BÁSICA'
-                WHEN p.complexidade = '02' THEN 'MÉDIA COMPLEXIDADE'
-                WHEN p.complexidade = '03' THEN 'ALTA COMPLEXIDADE'
-                ELSE 'OUTROS'
-            END as categoria
-        FROM atendimento a
-        INNER JOIN procedimento p ON a.codigo_procedimento = p.codigo_procedimento
-        WHERE p.complexidade IS NOT NULL
+        SELECT DISTINCT categoria
+        FROM categoria_unidade
         ORDER BY categoria
         """
         
@@ -65,8 +57,8 @@ class DatabaseService:
             return df['categoria'].tolist()
         except Exception as e:
             logger.error(f"Erro ao buscar categorias: {str(e)}")
-            # Fallback com categorias padrão
-            return ['ATENÇÃO BÁSICA', 'MÉDIA COMPLEXIDADE', 'ALTA COMPLEXIDADE', 'OUTROS']
+            # Fallback com categorias padrão do CSV
+            return ['CASA ESPECIALIZADA', 'DEPARTAMENTO', 'HOSPITAL', 'SAMU', 'UNIDADE BASICA DE SAUDE', 'UPA']
     
     @staticmethod
     def get_unidades_disponiveis(categorias: Optional[List[str]] = None) -> List[Dict[str, str]]:
@@ -74,24 +66,29 @@ class DatabaseService:
         Retorna lista de unidades de saúde disponíveis
         
         Args:
-            categorias: Filtro opcional por categorias
+            categorias: Filtro opcional por categorias (tipos de unidade)
             
         Returns:
-            Lista de dicts com {'cnes': 'CNES', 'nome': 'Nome da Unidade'}
+            Lista de dicts com {'cnes': 'CNES', 'nome': 'Nome da Unidade', 'categoria': 'CATEGORIA'}
         """
-        # Buscar nomes das unidades da view vw_orcamentos_completo (tem nome_estabelecimento)
+        # Buscar unidades com suas categorias
         query = """
         SELECT DISTINCT 
-            num_cnes as cnes,
-            nome_estabelecimento as nome
-        FROM vw_orcamentos_completo
-        ORDER BY nome
+            c.codigo_unidade as cnes,
+            c.nome_estabelecimento as nome,
+            c.categoria
+        FROM categoria_unidade c
         """
         
+        # Adiciona filtro de categorias se fornecido
+        if categorias and len(categorias) > 0:
+            cat_list = "', '".join(categorias)
+            query += f" WHERE c.categoria IN ('{cat_list}')"
+        
+        query += " ORDER BY nome"
+        
         try:
-            df = pd.read_sql(query, engine_espelho)
-            # Normalizar nomes das colunas
-            df.columns = ['cnes', 'nome']
+            df = pd.read_sql(query, engine_papa)
             return df.to_dict('records')
         except Exception as e:
             logger.error(f"Erro ao buscar unidades: {str(e)}")

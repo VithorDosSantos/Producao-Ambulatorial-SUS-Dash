@@ -84,11 +84,24 @@ class AppState:
         return resultado
     
     def get_categorias(self) -> List[str]:
-        """Retorna lista de categorias disponíveis"""
+        """Retorna lista de categorias disponíveis (sem emoji)"""
         if self.df_consolidado is None or self.df_consolidado.empty:
             return []
         
-        return sorted(self.df_consolidado['Categoria'].unique().tolist())
+        # Remove emojis das categorias para os filtros
+        categorias = self.df_consolidado['Categoria'].unique().tolist()
+        categorias_sem_emoji = []
+        
+        for cat in categorias:
+            # Remove emojis (primeiros caracteres até encontrar letra)
+            cat_limpa = cat
+            for i, c in enumerate(cat):
+                if c.isalpha():
+                    cat_limpa = cat[i:].strip()
+                    break
+            categorias_sem_emoji.append(cat_limpa)
+        
+        return sorted(list(set(categorias_sem_emoji)))
     
     def get_unidades(self, categorias: Optional[List[str]] = None) -> List[dict]:
         """
@@ -103,13 +116,15 @@ class AppState:
         if self.df_consolidado is None or self.df_consolidado.empty:
             return []
         
-        df = self.df_consolidado
+        df = self.df_consolidado.copy()
         
         if categorias:
-            df = df[df['Categoria'].isin(categorias)]
+            # Remove emojis das categorias para comparação
+            df['Categoria_Limpa'] = df['Categoria'].apply(lambda x: ''.join([c for i, c in enumerate(x) if c.isalpha() or i > 0]).strip())
+            df = df[df['Categoria_Limpa'].isin(categorias)]
         
         resultado = []
-        for _, row in df[['Unidade', 'CNES_KEY']].iterrows():
+        for _, row in df[['Unidade', 'CNES_KEY']].drop_duplicates().iterrows():
             resultado.append({
                 'nome': row['Unidade'],
                 'cnes': row['CNES_KEY']

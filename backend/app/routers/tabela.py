@@ -45,18 +45,29 @@ async def get_tabela_detalhada(
     try:
         # Se houver dados carregados via upload, usa eles
         if app_state.tem_dados():
-            df_papa = app_state.df_papa
-            df_teto = app_state.df_teto
+            df_papa = app_state.df_papa.copy()
+            df_teto = app_state.df_teto.copy()
+            
             if competencias:
                 df_papa = app_state.filtrar_papa_por_competencias(competencias)
-            if categorias:
-                df_papa = df_papa[df_papa['Categoria'].isin(categorias)]
+            
+            # Filtro de unidades no PAPA
             if unidades:
                 df_papa = df_papa[df_papa['CNES_KEY'].isin(unidades)]
-            from ..services.agregacoes import consolidar_producao_teto, preparar_tabela_detalhada
+            
+            # Filtro de categoria no TETO
+            if categorias:
+                # Remove emojis das categorias no df_teto para comparação
+                df_teto['Categoria_Limpa'] = df_teto['Categoria'].apply(
+                    lambda x: ''.join([c for i, c in enumerate(x) if c.isalpha() or c == ' ' or (i > 0 and not c.isalpha())]).strip()
+                )
+                df_teto = df_teto[df_teto['Categoria_Limpa'].isin(categorias)]
+                df_teto = df_teto.drop(columns=['Categoria_Limpa'])
+            
+            from ..services.agregacoes import consolidar_producao_teto
             num_meses = len(competencias) if competencias else len(df_papa['MES_NOME'].unique())
             df_consolidado = consolidar_producao_teto(df_papa, df_teto)
-            df_consolidado = filtrar_consolidado(df_consolidado, categorias=categorias, unidades=unidades)
+            # Não precisa filtrar novamente - já filtramos antes da consolidação
             if df_consolidado.empty:
                 return []
             df_tabela = preparar_tabela_detalhada(df_consolidado, num_meses)

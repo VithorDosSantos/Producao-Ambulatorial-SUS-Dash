@@ -16,12 +16,8 @@ SELECT
     u.natureza_juridica,
     a.codigo_procedimento,
     p.descricao_procedimento,
-    CASE 
-        WHEN p.complexidade = '01' THEN 'ATENÇÃO BÁSICA'
-        WHEN p.complexidade = '02' THEN 'MÉDIA COMPLEXIDADE'
-        WHEN p.complexidade = '03' THEN 'ALTA COMPLEXIDADE'
-        ELSE 'OUTROS'
-    END as categoria,
+    -- Usa a categoria de tipo de unidade (UPA, HOSPITAL, SAMU, etc.)
+    COALESCE(c.categoria, 'OUTROS') as categoria,
     a.quantidade_aprovada,
     a.valor_aprovado,
     a.quantidade_produzida,
@@ -33,6 +29,7 @@ SELECT
 FROM atendimento a
 INNER JOIN unidade_saude u ON a.codigo_unidade = u.codigo_unidade
 INNER JOIN procedimento p ON a.codigo_procedimento = p.codigo_procedimento
+LEFT JOIN categoria_unidade c ON a.codigo_unidade = c.codigo_unidade
 WHERE u.natureza_juridica = '1031';
 
 -- Índices na view materializada para queries rápidas

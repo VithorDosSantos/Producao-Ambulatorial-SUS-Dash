@@ -112,13 +112,28 @@ def carregar_mapa_categorias(caminho_csv: Optional[str] = None) -> Optional[Dict
     try:
         if os.path.exists(caminho_csv):
             df_cat = pd.read_csv(caminho_csv, sep=';', encoding='latin1', dtype=str)
-            df_cat.columns = [c.strip() for c in df_cat.columns]
+            # Limpa BOM e espaços das colunas
+            df_cat.columns = [c.strip().replace('\ufeff', '').replace('\xef\xbb\xbf', '') for c in df_cat.columns]
             
-            if 'Num_CNES' in df_cat.columns and 'Categoria' in df_cat.columns:
-                df_cat['Num_CNES'] = df_cat['Num_CNES'].astype(str).str.strip()
-                df_cat['Categoria'] = df_cat['Categoria'].str.strip().str.upper()
-                return dict(zip(df_cat['Num_CNES'], df_cat['Categoria']))
-    except Exception:
+            # Tenta encontrar as colunas corretas
+            col_cnes = None
+            col_categoria = None
+            
+            for col in df_cat.columns:
+                col_upper = col.upper()
+                if 'CNES' in col_upper:
+                    col_cnes = col
+                if 'CATEGORIA' in col_upper:
+                    col_categoria = col
+            
+            if col_cnes and col_categoria:
+                df_cat[col_cnes] = df_cat[col_cnes].astype(str).str.strip().str.zfill(7)
+                df_cat[col_categoria] = df_cat[col_categoria].str.strip().str.upper()
+                mapa = dict(zip(df_cat[col_cnes], df_cat[col_categoria]))
+                print(f"✓ Carregado mapeamento de {len(mapa)} categorias do CSV")
+                return mapa
+    except Exception as e:
+        print(f"⚠ Erro ao carregar mapa de categorias: {e}")
         pass
     
     return None

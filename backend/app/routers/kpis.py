@@ -41,15 +41,25 @@ async def get_kpis(
     try:
         # Se houver dados carregados via upload, calcula KPIs a partir deles
         if app_state.tem_dados():
-            # Filtra dados conforme filtros (categoria só em df_papa)
-            df_papa = app_state.df_papa
-            df_teto = app_state.df_teto
+            # Filtra dados conforme filtros
+            df_papa = app_state.df_papa.copy()
+            df_teto = app_state.df_teto.copy()
+            
             if competencias:
                 df_papa = app_state.filtrar_papa_por_competencias(competencias)
-            if categorias:
-                df_papa = df_papa[df_papa['Categoria'].isin(categorias)]
+            
+            # Filtro de unidades no PAPA
             if unidades:
                 df_papa = df_papa[df_papa['CNES_KEY'].isin(unidades)]
+            
+            # Filtro de categoria no TETO (categoria está no df_teto, não no df_papa)
+            if categorias:
+                # Remove emojis das categorias no df_teto para comparação
+                df_teto['Categoria_Limpa'] = df_teto['Categoria'].apply(
+                    lambda x: ''.join([c for i, c in enumerate(x) if c.isalpha() or c == ' ' or (i > 0 and not c.isalpha())]).strip()
+                )
+                df_teto = df_teto[df_teto['Categoria_Limpa'].isin(categorias)]
+                df_teto = df_teto.drop(columns=['Categoria_Limpa'])
             # Se não houver produção após filtro, retorna KPIs zerados com mensagem
             if df_papa.empty:
                 logger.info("Filtro resultou em DataFrame de produção vazio. Retornando KPIs zerados.")

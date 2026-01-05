@@ -39,16 +39,27 @@ async def get_producao_por_unidade(
     try:
         # Se houver dados carregados via upload, usar eles
         if app_state.tem_dados():
-            df_papa = app_state.df_papa
-            df_teto = app_state.df_teto
+            df_papa = app_state.df_papa.copy()
+            df_teto = app_state.df_teto.copy()
+            
             if competencias:
                 df_papa = app_state.filtrar_papa_por_competencias(competencias)
-            if categorias:
-                df_papa = df_papa[df_papa['Categoria'].isin(categorias)]
+            
+            # Filtro de unidades no PAPA
             if unidades:
                 df_papa = df_papa[df_papa['CNES_KEY'].isin(unidades)]
+            
+            # Filtro de categoria no TETO (categoria está no df_teto, não no df_papa)
+            if categorias:
+                # Remove emojis das categorias no df_teto para comparação
+                df_teto['Categoria_Limpa'] = df_teto['Categoria'].apply(
+                    lambda x: ''.join([c for i, c in enumerate(x) if c.isalpha() or c == ' ' or (i > 0 and not c.isalpha())]).strip()
+                )
+                df_teto = df_teto[df_teto['Categoria_Limpa'].isin(categorias)]
+                df_teto = df_teto.drop(columns=['Categoria_Limpa'])
+            
             df_consolidado = consolidar_producao_teto(df_papa, df_teto)
-            df_consolidado = filtrar_consolidado(df_consolidado, categorias=categorias, unidades=unidades)
+            # Não precisa filtrar novamente - já filtramos antes da consolidação
             # Ordena por valor aprovado e pega o top N
             df_consolidado = df_consolidado.sort_values(by='Valor_Produzido', ascending=False).head(top)
             resultado = []
@@ -94,37 +105,63 @@ async def get_distribuicao_categorias(
     try:
         # Se houver dados carregados via upload, usar eles
         if app_state.tem_dados():
-            df_papa = app_state.df_papa
-            df_teto = app_state.df_teto
+            df_papa = app_state.df_papa.copy()
+            df_teto = app_state.df_teto.copy()
+            
             if competencias:
                 df_papa = app_state.filtrar_papa_por_competencias(competencias)
-            if categorias:
-                df_papa = df_papa[df_papa['Categoria'].isin(categorias)]
+            
+            # Filtro de unidades no PAPA
             if unidades:
                 df_papa = df_papa[df_papa['CNES_KEY'].isin(unidades)]
+            
+            # Filtro de categoria no TETO (categoria está no df_teto, não no df_papa)
+            if categorias:
+                # Remove emojis das categorias no df_teto para comparação
+                df_teto['Categoria_Limpa'] = df_teto['Categoria'].apply(
+                    lambda x: ''.join([c for i, c in enumerate(x) if c.isalpha() or c == ' ' or (i > 0 and not c.isalpha())]).strip()
+                )
+                df_teto = df_teto[df_teto['Categoria_Limpa'].isin(categorias)]
+                df_teto = df_teto.drop(columns=['Categoria_Limpa'])
+            
             df_consolidado = consolidar_producao_teto(df_papa, df_teto)
-            df_consolidado = filtrar_consolidado(df_consolidado, categorias=categorias, unidades=unidades)
-            # Corrige: percentual de cada categoria = valor_producao_categoria / teto_total * 100
+            # Não precisa filtrar novamente - já filtramos antes da consolidação
+            
+            # Agrupa por categoria
             df_cat = df_consolidado.groupby('Categoria').agg(
                 valor_producao=('Valor_Produzido', 'sum')
             ).reset_index()
+            
             # Total produzido (soma de todas as categorias)
             total_produzido = df_cat['valor_producao'].sum()
+            
             resultado = []
             for _, row in df_cat.iterrows():
+                # Percentual = (produção da categoria / produção total) * 100
                 perc_exec = (row['valor_producao'] / total_produzido * 100) if total_produzido > 0 else 0.0
                 resultado.append(CategoriaDistribuicao(
                     categoria=row['Categoria'],
                     valor_producao=float(row['valor_producao']),
                     percentual_execucao=float(perc_exec)
                 ))
-            return resultado
+            return sorted(resultado, key=lambda x: x.valor_producao, reverse=True)
         # Caso contrário, usa banco normalmente
         dados = db_service.get_distribuicao_categoria_sql(
             competencias=competencias if competencias else None,
             categorias=categorias if categorias else None,
             unidades=unidades if unidades else None
         )
-        return dados
+        
+        # Calcula percentual para dados do banco também
+        total_produzido = sum(d['valor_producao'] for d in dados)
+        resultado = []
+        for d in dados:
+            perc_exec = (d['valor_producao'] / total_produzido * 100) if total_produzido > 0 else 0.0
+            resultado.append(CategoriaDistribuicao(
+                categoria=d['categoria'],
+                valor_producao=d['valor_producao'],
+                percentual_execucao=perc_exec
+            ))
+        return sorted(resultado, key=lambda x: x.valor_producao, reverse=True)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao processar dados: {str(e)}")
