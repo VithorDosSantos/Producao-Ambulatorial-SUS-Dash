@@ -73,8 +73,8 @@ if cors_origins_env:
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
-    allow_credentials=True,
+    allow_origins=["*"],  # Temporário - permite todas as origens
+    allow_credentials=False,  # Mudado para False quando usa wildcard
     allow_methods=["*"],
     allow_headers=["*"],
 )
