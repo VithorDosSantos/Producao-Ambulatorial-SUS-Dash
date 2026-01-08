@@ -62,11 +62,13 @@ allowed_origins = [
     "http://localhost:3000",
     "http://localhost:3001", 
     "http://localhost:5173",
+    "https://producao-ambulatorial-sus-dash-frontend.onrender.com",
 ]
 
 # Em produção, adicionar URLs do Render/Vercel
-if os.getenv("ENVIRONMENT") == "production":
-    production_urls = os.getenv("CORS_ORIGINS", "").split(",")
+cors_origins_env = os.getenv("CORS_ORIGINS", "")
+if cors_origins_env:
+    production_urls = cors_origins_env.split(",")
     allowed_origins.extend([url.strip() for url in production_urls if url.strip()])
 
 app.add_middleware(
