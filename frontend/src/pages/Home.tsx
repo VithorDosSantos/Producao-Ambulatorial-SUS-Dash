@@ -30,24 +30,6 @@ const Home: React.FC = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-6 py-12">
-        {/* Seção para upload de arquivos PAPA/TETO */}
-        <div className="mb-10 flex flex-col items-center">
-          <button
-            className="mb-4 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg shadow-lg hover:from-blue-700 hover:to-indigo-700 transition-all"
-            onClick={() => setShowUpload((v) => !v)}
-          >
-            {showUpload ? 'Fechar Upload de Arquivos' : 'Usar Arquivos PAPA/TETO (CSV)'}
-          </button>
-          {showUpload && (
-            <div className="w-full max-w-2xl">
-              <FileUpload onUploadSuccess={() => {
-                setUploadDone(true);
-                setShowUpload(false);
-                navigate('/dashboard');
-              }} />
-            </div>
-          )}
-        </div>
         {/* Hero Section */}
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
@@ -57,6 +39,117 @@ const Home: React.FC = () => {
             Plataforma integrada para monitoramento e análise de dados de produção ambulatorial, 
             execução orçamentária e indicadores de saúde pública.
           </p>
+        </div>
+
+        {/* Opções de Fonte de Dados */}
+        <div className="mb-16">
+          <div className="text-center mb-8">
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Escolha a Fonte de Dados</h3>
+            <p className="text-gray-600">Selecione como deseja utilizar o sistema</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {/* Opção 1: Banco de Dados */}
+            <div className="bg-white rounded-2xl p-8 shadow-lg border-2 border-gray-200 hover:border-blue-500 transition-all">
+              <div className="flex justify-center mb-6">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+                  </svg>
+                </div>
+              </div>
+              <h4 className="text-xl font-bold text-gray-900 mb-3 text-center">Usar Banco de Dados</h4>
+              <p className="text-gray-600 mb-6 text-center">
+                Acesse dados já importados no PostgreSQL com consultas otimizadas e análises históricas completas.
+              </p>
+              <div className="space-y-2 mb-6">
+                <div className="flex items-center text-sm text-gray-700">
+                  <svg className="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  Dados permanentes e históricos
+                </div>
+                <div className="flex items-center text-sm text-gray-700">
+                  <svg className="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  Performance otimizada
+                </div>
+                <div className="flex items-center text-sm text-gray-700">
+                  <svg className="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  Análises complexas
+                </div>
+              </div>
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:from-blue-700 hover:to-indigo-700 transition-all flex items-center justify-center space-x-2"
+              >
+                <span>Acessar Dashboard</span>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Opção 2: Upload de Arquivos CSV */}
+            <div className="bg-white rounded-2xl p-8 shadow-lg border-2 border-gray-200 hover:border-green-500 transition-all">
+              <div className="flex justify-center mb-6">
+                <div className="w-16 h-16 bg-gradient-to-br from-green-600 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                  </svg>
+                </div>
+              </div>
+              <h4 className="text-xl font-bold text-gray-900 mb-3 text-center">Usar Arquivos PAPA/TETO</h4>
+              <p className="text-gray-600 mb-6 text-center">
+                Faça upload de arquivos CSV do PAPA e TETO para análise temporária e exploratória de dados.
+              </p>
+              <div className="space-y-2 mb-6">
+                <div className="flex items-center text-sm text-gray-700">
+                  <svg className="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  Análise rápida sem banco
+                </div>
+                <div className="flex items-center text-sm text-gray-700">
+                  <svg className="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  Formato CSV padrão
+                </div>
+                <div className="flex items-center text-sm text-gray-700">
+                  <svg className="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  Teste de novos dados
+                </div>
+              </div>
+              <button
+                onClick={() => setShowUpload((v) => !v)}
+                className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:from-green-700 hover:to-emerald-700 transition-all flex items-center justify-center space-x-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <span>{showUpload ? 'Fechar Upload' : 'Fazer Upload de CSV'}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Upload Component */}
+          {showUpload && (
+            <div className="mt-8 max-w-4xl mx-auto">
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-8 border-2 border-green-200">
+                <FileUpload onUploadSuccess={() => {
+                  setUploadDone(true);
+                  setShowUpload(false);
+                  navigate('/dashboard');
+                }} />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Features Grid */}
@@ -101,25 +194,7 @@ const Home: React.FC = () => {
           </div>
         </div>
 
-        {/* CTA Section */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-12 shadow-2xl text-center">
-          <h3 className="text-3xl font-bold text-white mb-4">
-            Acesse o Dashboard Completo
-          </h3>
-          <p className="text-blue-100 text-lg mb-8 max-w-2xl mx-auto">
-            Visualize todos os indicadores, aplique filtros personalizados e analise dados históricos 
-            da produção ambulatorial do município.
-          </p>
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="bg-white text-blue-600 px-10 py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all flex items-center space-x-3 mx-auto"
-          >
-            <span>Acessar Dashboard</span>
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
-          </button>
-        </div>
+
 
         {/* Stats Section */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-12">
