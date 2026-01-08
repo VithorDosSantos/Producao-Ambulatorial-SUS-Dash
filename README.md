@@ -2,6 +2,29 @@
 
 Sistema completo de análise e visualização de dados SIA/SUS com arquitetura desacoplada Backend (Python/FastAPI) + Frontend (React/TypeScript).
 
+## 🚀 Deploy Rápido
+
+### Opção mais fácil: Render (Blueprint)
+
+1. **Fork/Clone este repositório**
+2. **Crie conta no Render:** https://render.com
+3. **Clique em "New +" → "Blueprint"**
+4. **Conecte o repositório e pronto!**
+
+O Render criará automaticamente:
+- ✅ Backend FastAPI
+- ✅ Frontend React/Vite
+- ✅ Banco PostgreSQL
+
+### Após o deploy:
+
+1. **Importe os dados para o PostgreSQL** usando pgAdmin, DBeaver ou psql
+2. **Configure as variáveis de ambiente** no painel do Render
+
+**📖 Guia completo de deploy:** [DEPLOY.md](DEPLOY.md)
+
+---
+
 ## 📋 Estrutura do Projeto
 
 ```

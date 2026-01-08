@@ -55,9 +55,23 @@ app = FastAPI(
 )
 
 # Configuração CORS (permite acesso do frontend)
+import os
+
+# URLs permitidas - adicione aqui a URL do seu frontend em produção
+allowed_origins = [
+    "http://localhost:3000",
+    "http://localhost:3001", 
+    "http://localhost:5173",
+]
+
+# Em produção, adicionar URLs do Render/Vercel
+if os.getenv("ENVIRONMENT") == "production":
+    production_urls = os.getenv("CORS_ORIGINS", "").split(",")
+    allowed_origins.extend([url.strip() for url in production_urls if url.strip()])
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001", "http://localhost:5173"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
