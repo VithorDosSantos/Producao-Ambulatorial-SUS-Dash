@@ -16,8 +16,11 @@ class ApiService {
   private api: AxiosInstance;
 
   constructor() {
+    // Usa a URL do backend em produção ou localhost em desenvolvimento
+    const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    
     this.api = axios.create({
-      baseURL: 'http://localhost:8000',
+      baseURL,
       headers: {
         'Content-Type': 'application/json',
       },
