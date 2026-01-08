@@ -5,7 +5,6 @@ import FileUpload from '../components/FileUpload';
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const [showUpload, setShowUpload] = useState(false);
-  const [uploadDone, setUploadDone] = useState(false);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
