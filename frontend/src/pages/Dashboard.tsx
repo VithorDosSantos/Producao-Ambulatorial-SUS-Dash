@@ -97,7 +97,6 @@ const Dashboard: React.FC = () => {
       alert(error.response?.data?.detail || 'Erro ao carregar dados do banco de dados');
     } finally {
       setLoading(false);
-      setInitialLoad(false);
       isLoadingRef.current = false;
     }
   };

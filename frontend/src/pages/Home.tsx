@@ -142,7 +142,6 @@ const Home: React.FC = () => {
             <div className="mt-8 max-w-4xl mx-auto">
               <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-8 border-2 border-green-200">
                 <FileUpload onUploadSuccess={() => {
-                  setUploadDone(true);
                   setShowUpload(false);
                   navigate('/dashboard');
                 }} />
