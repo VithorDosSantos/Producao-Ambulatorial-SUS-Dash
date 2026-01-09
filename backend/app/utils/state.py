@@ -85,23 +85,30 @@ class AppState:
     
     def get_categorias(self) -> List[str]:
         """Retorna lista de categorias disponíveis (sem emoji)"""
-        if self.df_consolidado is None or self.df_consolidado.empty:
-            return []
+        # Prioriza dados consolidados, mas aceita dados PAPA se consolidado não existir
+        if self.df_consolidado is not None and not self.df_consolidado.empty:
+            # Remove emojis das categorias para os filtros
+            categorias = self.df_consolidado['Categoria'].unique().tolist()
+            categorias_sem_emoji = []
+            
+            for cat in categorias:
+                # Remove emojis (primeiros caracteres até encontrar letra)
+                cat_limpa = cat
+                for i, c in enumerate(cat):
+                    if c.isalpha():
+                        cat_limpa = cat[i:].strip()
+                        break
+                categorias_sem_emoji.append(cat_limpa)
+            
+            return sorted(list(set(categorias_sem_emoji)))
         
-        # Remove emojis das categorias para os filtros
-        categorias = self.df_consolidado['Categoria'].unique().tolist()
-        categorias_sem_emoji = []
+        # Fallback: pega categorias do df_papa se consolidado não existir
+        elif self.df_papa is not None and not self.df_papa.empty:
+            if 'CATEGORIA' in self.df_papa.columns:
+                categorias = self.df_papa['CATEGORIA'].dropna().unique().tolist()
+                return sorted(categorias)
         
-        for cat in categorias:
-            # Remove emojis (primeiros caracteres até encontrar letra)
-            cat_limpa = cat
-            for i, c in enumerate(cat):
-                if c.isalpha():
-                    cat_limpa = cat[i:].strip()
-                    break
-            categorias_sem_emoji.append(cat_limpa)
-        
-        return sorted(list(set(categorias_sem_emoji)))
+        return []
     
     def get_unidades(self, categorias: Optional[List[str]] = None) -> List[dict]:
         """
@@ -113,24 +120,44 @@ class AppState:
         Returns:
             Lista de dicionários com unidade e CNES
         """
-        if self.df_consolidado is None or self.df_consolidado.empty:
-            return []
+        # Prioriza dados consolidados, mas aceita dados PAPA se consolidado não existir
+        if self.df_consolidado is not None and not self.df_consolidado.empty:
+            df = self.df_consolidado.copy()
+            
+            if categorias:
+                # Remove emojis das categorias para comparação
+                df['Categoria_Limpa'] = df['Categoria'].apply(lambda x: ''.join([c for i, c in enumerate(x) if c.isalpha() or i > 0]).strip())
+                df = df[df['Categoria_Limpa'].isin(categorias)]
+            
+            resultado = []
+            for _, row in df[['Unidade', 'CNES_KEY']].drop_duplicates().iterrows():
+                resultado.append({
+                    'nome': row['Unidade'],
+                    'cnes': row['CNES_KEY']
+                })
+            
+            return sorted(resultado, key=lambda x: x['nome'])
         
-        df = self.df_consolidado.copy()
+        # Fallback: pega unidades do df_papa se consolidado não existir
+        elif self.df_papa is not None and not self.df_papa.empty:
+            df = self.df_papa.copy()
+            
+            # Filtrar por categoria se especificado
+            if categorias and 'CATEGORIA' in df.columns:
+                df = df[df['CATEGORIA'].isin(categorias)]
+            
+            # Pegar unidades únicas
+            if 'UNIDADE' in df.columns and 'CNES' in df.columns:
+                unidades_df = df[['UNIDADE', 'CNES']].drop_duplicates().sort_values('UNIDADE')
+                resultado = []
+                for _, row in unidades_df.iterrows():
+                    resultado.append({
+                        'nome': row['UNIDADE'],
+                        'cnes': str(row['CNES'])
+                    })
+                return resultado
         
-        if categorias:
-            # Remove emojis das categorias para comparação
-            df['Categoria_Limpa'] = df['Categoria'].apply(lambda x: ''.join([c for i, c in enumerate(x) if c.isalpha() or i > 0]).strip())
-            df = df[df['Categoria_Limpa'].isin(categorias)]
-        
-        resultado = []
-        for _, row in df[['Unidade', 'CNES_KEY']].drop_duplicates().iterrows():
-            resultado.append({
-                'nome': row['Unidade'],
-                'cnes': row['CNES_KEY']
-            })
-        
-        return sorted(resultado, key=lambda x: x['nome'])
+        return []
     
     def filtrar_papa_por_competencias(self, competencias: List[str]) -> pd.DataFrame:
         """
