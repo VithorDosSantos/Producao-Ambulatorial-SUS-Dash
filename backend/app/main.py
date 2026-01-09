@@ -86,6 +86,15 @@ app.add_middleware(
 )
 
 # =============================================
+# ENDPOINT DE TESTE ULTRA SIMPLES
+# =============================================
+
+@app.get("/ping")
+async def ping():
+    """Endpoint de teste ultra simples"""
+    return {"status": "pong"}
+
+# =============================================
 # REGISTRA ROUTERS (sem upload)
 # =============================================
 
