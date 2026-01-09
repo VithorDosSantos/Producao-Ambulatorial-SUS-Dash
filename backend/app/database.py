@@ -18,9 +18,13 @@ logger = logging.getLogger(__name__)
 engine_papa = create_engine(
     get_papa_connection_string(),
     poolclass=pool.QueuePool,
-    pool_size=10,
-    max_overflow=20,
+    pool_size=5,
+    max_overflow=10,
     pool_pre_ping=True,  # Verifica conexões antes de usar
+    connect_args={
+        "connect_timeout": 5,  # Timeout de 5 segundos
+        "options": "-c statement_timeout=30000"  # 30s para queries
+    },
     echo=False  # Debug SQL (True para desenvolvimento)
 )
 
@@ -28,9 +32,13 @@ engine_papa = create_engine(
 engine_espelho = create_engine(
     get_espelho_connection_string(),
     poolclass=pool.QueuePool,
-    pool_size=10,
-    max_overflow=20,
+    pool_size=5,
+    max_overflow=10,
     pool_pre_ping=True,
+    connect_args={
+        "connect_timeout": 5,
+        "options": "-c statement_timeout=30000"
+    },
     echo=False
 )
 
@@ -66,25 +74,28 @@ def get_espelho_db() -> Generator[Session, None, None]:
 # =============================================
 
 def test_connections():
-    """Testa conexões com ambos os bancos"""
+    """Testa conexões com ambos os bancos com timeout"""
     try:
         # Testa PAPA
         with engine_papa.connect() as conn:
-            result = conn.execute(text("SELECT 1"))
+            conn.execute(text("SELECT 1"))
             logger.info("✅ Conexão com banco PAPA OK")
         
         # Testa Espelho
         with engine_espelho.connect() as conn:
-            result = conn.execute(text("SELECT 1"))
+            conn.execute(text("SELECT 1"))
             logger.info("✅ Conexão com banco Espelho OK")
         
         return True
     except Exception as e:
-        logger.error(f"❌ Erro ao conectar aos bancos: {str(e)}")
+        logger.warning(f"⚠️ Bancos não conectados: {str(e)[:100]}")
         return False
 
 def close_connections():
     """Fecha conexões com os bancos"""
-    engine_papa.dispose()
-    engine_espelho.dispose()
-    logger.info("Conexões com bancos fechadas")
+    try:
+        engine_papa.dispose()
+        engine_espelho.dispose()
+        logger.info("Conexões com bancos fechadas")
+    except Exception as e:
+        logger.warning(f"Erro ao fechar conexões: {e}")

@@ -28,19 +28,25 @@ async def lifespan(app: FastAPI):
     """
     # Startup
     logger.info("🚀 Iniciando Dashboard SIA/SUS API...")
-    logger.info("📊 Conectando aos bancos de dados...")
+    logger.info("📊 Testando conexões com bancos de dados...")
     
-    if test_connections():
-        logger.info("✅ Sistema pronto! Dados vêm diretamente do banco PostgreSQL")
-    else:
-        logger.error("❌ Falha ao conectar aos bancos. Verifique as configurações.")
+    try:
+        if test_connections():
+            logger.info("✅ Sistema pronto! Dados vêm diretamente do banco PostgreSQL")
+        else:
+            logger.warning("⚠️ Bancos não conectados. Sistema funcionará com upload CSV.")
+    except Exception as e:
+        logger.warning(f"⚠️ Erro ao testar conexões: {e}. Sistema funcionará com upload CSV.")
     
     yield
     
     # Shutdown
     logger.info("🛑 Encerrando aplicação...")
-    close_connections()
-    logger.info("✅ Conexões fechadas")
+    try:
+        close_connections()
+        logger.info("✅ Conexões fechadas")
+    except Exception as e:
+        logger.warning(f"⚠️ Erro ao fechar conexões: {e}")
 
 # =============================================
 # CRIAÇÃO DA APLICAÇÃO
