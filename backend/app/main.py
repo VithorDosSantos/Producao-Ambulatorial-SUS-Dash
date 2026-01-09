@@ -91,6 +91,10 @@ app.include_router(tendencia.router)
 app.include_router(tabela.router)
 app.include_router(upload.router)
 
+# Debug router (remover em produção)
+from .routers import debug
+app.include_router(debug.router)
+
 
 @app.get("/")
 async def root():
