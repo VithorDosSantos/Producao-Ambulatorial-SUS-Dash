@@ -25,7 +25,7 @@
 3. Vá em **"Settings"** (ícone de engrenagem)
 4. Em **"Root Directory"**, digite: `backend`
 5. Em **"Build Command"**, deixe: `pip install -r requirements.txt`
-6. Em **"Start Command"**, coloque: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+6. Em **"Start Command"**, coloque: `sh -c "uvicorn app.main:app --host 0.0.0.0 --port ${PORT}"`
 
 ### 2.3 Adicionar Variáveis de Ambiente
 
