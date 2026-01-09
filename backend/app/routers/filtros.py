@@ -22,9 +22,8 @@ async def get_competencias():
     """
     try:
         # Se há dados em memória (upload feito), usa eles
-        if app_state.papa_df is not None and not app_state.papa_df.empty:
-            competencias_unicas = sorted(app_state.papa_df['COMPETENCIA'].unique().tolist())
-            competencias = [{"codigo": comp, "nome": comp, "ordem": i+1} for i, comp in enumerate(competencias_unicas)]
+        if app_state.df_papa is not None and not app_state.df_papa.empty:
+            competencias = app_state.get_competencias()
             return {
                 "competencias": competencias,
                 "total": len(competencias)
@@ -52,13 +51,12 @@ async def get_categorias():
     """
     try:
         # Se há dados em memória (upload feito), usa eles
-        if app_state.papa_df is not None and not app_state.papa_df.empty:
-            if 'CATEGORIA' in app_state.papa_df.columns:
-                categorias = sorted(app_state.papa_df['CATEGORIA'].dropna().unique().tolist())
-                return {
-                    "categorias": categorias,
-                    "total": len(categorias)
-                }
+        if app_state.df_papa is not None and not app_state.df_papa.empty:
+            categorias = app_state.get_categorias()
+            return {
+                "categorias": categorias,
+                "total": len(categorias)
+            }
         
         # Senão, busca do banco
         categorias = db_service.get_categorias_disponiveis()
@@ -87,22 +85,13 @@ async def get_unidades(categorias: Optional[List[str]] = Query(None)):
     """
     try:
         # Se há dados em memória (upload feito), usa eles
-        if app_state.papa_df is not None and not app_state.papa_df.empty:
-            df = app_state.papa_df.copy()
-            
-            # Filtrar por categoria se especificado
-            if categorias:
-                df = df[df['CATEGORIA'].isin(categorias)]
-            
-            # Pegar unidades únicas
-            if 'UNIDADE' in df.columns and 'CNES' in df.columns:
-                unidades_df = df[['UNIDADE', 'CNES']].drop_duplicates().sort_values('UNIDADE')
-                unidades = [{"nome": row['UNIDADE'], "cnes": str(row['CNES'])} for _, row in unidades_df.iterrows()]
-                return {
-                    "unidades": unidades,
-                    "total": len(unidades),
-                    "filtro_aplicado": categorias is not None
-                }
+        if app_state.df_papa is not None and not app_state.df_papa.empty:
+            unidades = app_state.get_unidades(categorias)
+            return {
+                "unidades": unidades,
+                "total": len(unidades),
+                "filtro_aplicado": categorias is not None
+            }
         
         # Senão, busca do banco
         unidades = db_service.get_unidades_disponiveis(categorias=categorias)
@@ -141,4 +130,5 @@ async def get_todos_filtros():
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao buscar filtros: {str(e)}")
+
 
