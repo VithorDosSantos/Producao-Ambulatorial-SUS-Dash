@@ -34,6 +34,17 @@ async def get_competencias():
         competencias = db_service.get_competencias_disponiveis()
         
         return {
+            "competencias": competencias,
+            "total": len(competencias)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao buscar competências: {str(e)}")
+
+
+@router.get("/categorias")
+async def get_categorias():
+    """
+    Retorna lista de categorias de procedimentos disponíveis.
     Usa dados em memória se houver upload, senão busca do banco.
     
     Returns:
@@ -49,23 +60,21 @@ async def get_competencias():
                     "total": len(categorias)
                 }
         
-        # Senão, busca do bancoraise HTTPException(status_code=500, detail=f"Erro ao buscar competências: {str(e)}")
-
-
-@router.get("/categorias")
-async def get_categorias():
-    """
-    Retorna lista de categorias de procedimentos disponíveis.
-    
-    Returns:
-        Lista de categorias (ATENÇÃO BÁSICA, MÉDIA COMPLEXIDADE, etc.)
-    """
-    try:
+        # Senão, busca do banco
         categorias = db_service.get_categorias_disponiveis()
         
         return {
             "categorias": categorias,
-            "total": len(categorias).
+            "total": len(categorias)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao buscar categorias: {str(e)}")
+
+
+@router.get("/unidades")
+async def get_unidades(categorias: Optional[List[str]] = Query(None)):
+    """
+    Retorna lista de unidades de saúde.
     Usa dados em memória se houver upload, senão busca do banco.
     
     Pode ser filtrada por categoria(s).
@@ -96,17 +105,6 @@ async def get_categorias():
                 }
         
         # Senão, busca do banco
-    Retorna lista de unidades de saúde do banco PAPA.
-    
-    Pode ser filtrada por categoria(s).
-    
-    Args:
-        categorias: Lista opcional de categorias para filtrar
-        
-    Returns:
-        Lista de unidades com nome e CNES
-    """
-    try:
         unidades = db_service.get_unidades_disponiveis(categorias=categorias)
         
         return {
@@ -128,7 +126,6 @@ async def get_todos_filtros():
         Competências, categorias e unidades
     """
     try:
-        from ..utils.state import app_state
         if app_state.tem_dados():
             competencias = app_state.get_competencias()
             categorias = app_state.get_categorias()
