@@ -115,20 +115,37 @@ async def get_todos_filtros():
         Competências, categorias e unidades
     """
     try:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info("=== Iniciando get_todos_filtros ===")
+        logger.info(f"tem_dados: {app_state.tem_dados()}")
+        logger.info(f"df_papa exists: {app_state.df_papa is not None}")
+        logger.info(f"df_teto exists: {app_state.df_teto is not None}")
+        
         if app_state.tem_dados():
+            logger.info("Buscando dados do app_state")
             competencias = app_state.get_competencias()
+            logger.info(f"Competencias: {len(competencias)}")
             categorias = app_state.get_categorias()
+            logger.info(f"Categorias: {len(categorias)}")
             unidades = app_state.get_unidades()
+            logger.info(f"Unidades: {len(unidades)}")
         else:
+            logger.info("Buscando dados do banco")
             competencias = db_service.get_competencias_disponiveis()
             categorias = db_service.get_categorias_disponiveis()
             unidades = db_service.get_unidades_disponiveis()
+        
+        logger.info("Criando resposta")
         return FiltrosResponse(
             competencias=competencias,
             categorias=categorias,
             unidades=unidades
         )
     except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"ERRO em get_todos_filtros: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Erro ao buscar filtros: {str(e)}")
 
 
