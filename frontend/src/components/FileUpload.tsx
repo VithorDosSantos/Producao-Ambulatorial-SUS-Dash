@@ -33,11 +33,23 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUploadSuccess }) => {
     setMessage(null);
 
     try {
+      console.log('[Upload] Enviando arquivos PAPA...');
       await apiService.uploadPAPA(papaFiles);
+      console.log('[Upload] PAPA enviado com sucesso');
+      
+      console.log('[Upload] Enviando arquivo Espelho...');
       await apiService.uploadEspelho(espelhoFile);
+      console.log('[Upload] Espelho enviado com sucesso');
+      
       setMessage({ type: 'success', text: 'Arquivos processados com sucesso. Carregando dados...' });
-      setTimeout(() => onUploadSuccess(), 1000);
+      
+      // Aguarda 2.5 segundos para garantir que o backend consolidou os dados
+      setTimeout(() => {
+        console.log('[Upload] Redirecionando para dashboard...');
+        onUploadSuccess();
+      }, 2500);
     } catch (error: any) {
+      console.error('[Upload] Erro:', error);
       setMessage({ type: 'error', text: error.response?.data?.detail || 'Erro ao processar arquivos. Verifique o formato e tente novamente.' });
     } finally {
       setUploading(false);
