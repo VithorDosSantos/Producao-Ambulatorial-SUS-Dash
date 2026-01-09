@@ -45,10 +45,14 @@ const Dashboard: React.FC = () => {
 
   const loadFiltros = async () => {
     try {
+      console.log('[Dashboard] Carregando filtros...');
       const data = await apiService.getTodosFiltros();
+      console.log('[Dashboard] Filtros recebidos:', data);
       
       if (!data.competencias || data.competencias.length === 0) {
-        alert('Erro: Nenhuma competência foi retornada do servidor');
+        console.error('[Dashboard] Nenhuma competência retornada!');
+        alert('Nenhum dado encontrado. Por favor, faça upload dos arquivos PAPA e Espelho primeiro.');
+        navigate('/');
         return;
       }
       
@@ -57,10 +61,12 @@ const Dashboard: React.FC = () => {
       setUnidades(data.unidades);
       
       const codigosCompetencias = data.competencias.map(c => c.codigo);
+      console.log('[Dashboard] Competências selecionadas:', codigosCompetencias);
       setSelectedCompetencias(codigosCompetencias);
     } catch (error) {
-      console.error('Erro ao carregar filtros:', error);
-      alert('Erro ao carregar filtros: ' + (error as any).message);
+      console.error('[Dashboard] Erro ao carregar filtros:', error);
+      alert('Erro ao carregar dados. Verifique se os arquivos foram enviados corretamente e tente novamente.');
+      navigate('/');
     }
   };
 
